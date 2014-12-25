@@ -23,7 +23,7 @@ type Sessions struct {
 	*httpsession.Manager
 }
 
-func NewSessions(sessionTimeout time.Duration) *Sessions {
+func New(sessionTimeout time.Duration) *Sessions {
 	sessionMgr := httpsession.Default()
 	if sessionTimeout > time.Second {
 		sessionMgr.SetMaxAge(sessionTimeout)

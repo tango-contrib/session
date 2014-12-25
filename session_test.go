@@ -26,7 +26,7 @@ func TestSession(t *testing.T) {
 	recorder.Body = buff
 
 	tg := tango.Classic()
-	tg.Use(NewSessions(time.Minute * 20))
+	tg.Use(New(time.Minute * 20))
 	tg.Get("/", new(SessionAction))
 
 	req, err := http.NewRequest("GET", "http://localhost:8000/", nil)

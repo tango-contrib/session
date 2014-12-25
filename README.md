@@ -1,4 +1,4 @@
-pongo2 [![Build Status](https://drone.io/github.com/tango-contrib/session/status.png)](https://drone.io/github.com/tango-contrib/session/latest) [![](http://gocover.io/_badge/github.com/tango-contrib/session)](http://gocover.io/github.com/tango-contrib/session)
+session [![Build Status](https://drone.io/github.com/tango-contrib/session/status.png)](https://drone.io/github.com/tango-contrib/session/latest) [![](http://gocover.io/_badge/github.com/tango-contrib/session)](http://gocover.io/github.com/tango-contrib/session)
 ======
 
 ** HEAVILLY DEVELOPMENT **
@@ -15,27 +15,25 @@ package main
 
 import (
     "github.com/lunny/tango"
-    "gopkg.in/flosch/pongo2.v3"
-    "github.com/tango-contrib/tpongo2"
+    "github.com/tango-contrib/session"
 )
 
-type RenderAction struct {
-    tpango2.Render
+type SessionAction struct {
+    Session
 }
 
-func (a *RenderAction) Get() error {
-    return a.RenderString("Hello {{ name }}!", pongo2.Context{
-        "name": "tango",
-    })
+func (a *SessionAction) Get() string {
+    a.Session.Set("test", "1")
+    return a.Session.Get("test").(string)
 }
 
 func main() {
     o := tango.Classic()
-    o.Use(tpango2.Default())
-    o.Get("/", new(RenderAction))
+    o.Use(session.New(time.Minute * 20))
+    o.Get("/", new(SessionAction))
 }
 ```
 
 ## Getting Help
 
-- [API Reference](https://gowalker.org/github.com/tango-contrib/tpongo2)
+- [API Reference](https://gowalker.org/github.com/tango-contrib/session)
