@@ -19,7 +19,7 @@ import (
 )
 
 type SessionAction struct {
-    Session
+    session.Session
 }
 
 func (a *SessionAction) Get() string {
