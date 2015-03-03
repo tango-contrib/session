@@ -1,7 +1,6 @@
 session [![Build Status](https://drone.io/github.com/tango-contrib/session/status.png)](https://drone.io/github.com/tango-contrib/session/latest) [![](http://gocover.io/_badge/github.com/tango-contrib/session)](http://gocover.io/github.com/tango-contrib/session)
 ======
 
-** HEAVILLY DEVELOPMENT **
 Session is a session middleware for [Tango](https://github.com/lunny/tango). 
 
 ## Installation
@@ -29,7 +28,9 @@ func (a *SessionAction) Get() string {
 
 func main() {
     o := tango.Classic()
-    o.Use(session.New(time.Minute * 20))
+    o.Use(session.New(session.Options{
+        MaxAge:time.Minute * 20,
+        }))
     o.Get("/", new(SessionAction))
 }
 ```
