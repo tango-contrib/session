@@ -3,6 +3,13 @@ session [![Build Status](https://drone.io/github.com/tango-contrib/session/statu
 
 Session is a session middleware for [Tango](https://github.com/lunny/tango). 
 
+## Backend Supports
+
+Currently session support some backends below:
+
+* Memory - memory as a session store
+* [Redis](http://github.com/tango-contrib/session-redis) - redis server as a session store
+
 ## Installation
 
     go get github.com/tango-contrib/session
