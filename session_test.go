@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/lunny/tango"
 )
@@ -26,7 +25,7 @@ func TestSession(t *testing.T) {
 	recorder.Body = buff
 
 	tg := tango.Classic()
-	tg.Use(New(time.Minute * 20))
+	tg.Use(New())
 	tg.Get("/", new(SessionAction))
 
 	req, err := http.NewRequest("GET", "http://localhost:8000/", nil)

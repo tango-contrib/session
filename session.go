@@ -1,44 +1,55 @@
 package session
 
 import (
+	"net/http"
 	"time"
-
-	"github.com/go-xweb/httpsession"
-	"github.com/lunny/tango"
 )
 
-type Sessioner interface {
-	SetSession(*httpsession.Session)
-}
-
 type Session struct {
-	*httpsession.Session
+	id      Id
+	maxAge  time.Duration
+	manager *Sessions
+	rw      http.ResponseWriter
 }
 
-func (s *Session) SetSession(session *httpsession.Session) {
-	s.Session = session
+func (session *Session) Id() Id {
+	return session.id
 }
 
-type Sessions struct {
-	*httpsession.Manager
+func (session *Session) SetId(id Id) {
+	session.id = id
 }
 
-func New(sessionTimeout time.Duration) *Sessions {
-	sessionMgr := httpsession.Default()
-	if sessionTimeout > time.Second {
-		sessionMgr.SetMaxAge(sessionTimeout)
-	}
-	sessionMgr.Run()
-
-	return &Sessions{Manager: sessionMgr}
+func (session *Session) Get(key string) interface{} {
+	return session.manager.Store.Get(session.id, key)
 }
 
-func (itor *Sessions) Handle(ctx *tango.Context) {
-	if action := ctx.Action(); ctx != nil {
-		if s, ok := action.(Sessioner); ok {
-			s.SetSession(itor.Session(ctx.Req(), ctx.ResponseWriter))
-		}
-	}
+func (session *Session) Set(key string, value interface{}) {
+	session.manager.Store.Set(session.id, key, value)
+}
 
-	ctx.Next()
+func (session *Session) Del(key string) bool {
+	return session.manager.Store.Del(session.id, key)
+}
+
+func (session *Session) Release() {
+	session.manager.Invalidate(session.rw, session)
+}
+
+func (session *Session) IsValid() bool {
+	return session.manager.Generator.IsValid(session.id)
+}
+
+func (session *Session) SetMaxAge(maxAge time.Duration) {
+	session.maxAge = maxAge
+}
+
+func (session *Session) SetSession(s *Session) {
+	session.id = s.id
+	session.maxAge = s.maxAge
+	session.manager = s.manager
+}
+
+type Sessioner interface {
+	SetSession(*Session)
 }
