@@ -9,6 +9,8 @@ Currently session support some backends below:
 
 * Memory - memory as a session store
 * [Redis](http://github.com/tango-contrib/session-redis) - redis server as a session store
+* [nodb](http://github.com/tango-contrib/session-nodb) - nodb as a session store
+* [ledis](http://github.com/tango-contrib/session-ledis) - ledis server as a session store
 
 ## Installation
 
