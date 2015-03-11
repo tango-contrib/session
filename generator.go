@@ -50,5 +50,5 @@ func (gen *Sha1Generator) Gen(req *http.Request) Id {
 }
 
 func (gen *Sha1Generator) IsValid(id Id) bool {
-	return string(id) != ""
+	return len(id) == 40
 }
