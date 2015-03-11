@@ -2,8 +2,6 @@ package session
 
 import "time"
 
-type Id string
-
 type Store interface {
 	Add(id Id) bool
 	Exist(id Id) bool

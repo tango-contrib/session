@@ -7,16 +7,16 @@ import (
 	"time"
 )
 
-// Transfer provide and set sessionid
-type Transfer interface {
+// Tracker provide and set sessionid
+type Tracker interface {
 	SetMaxAge(maxAge time.Duration)
 	Get(req *http.Request) (Id, error)
 	Set(req *http.Request, rw http.ResponseWriter, id Id)
 	Clear(rw http.ResponseWriter)
 }
 
-// CookieRetriever provide sessionid from cookie
-type CookieTransfer struct {
+// CookieTracker provide sessionid from cookie
+type CookieTracker struct {
 	Name     string
 	MaxAge   time.Duration
 	Lock     sync.Mutex
@@ -25,8 +25,8 @@ type CookieTransfer struct {
 	Domain   string
 }
 
-func NewCookieTransfer(name string, maxAge time.Duration, secure bool, rootPath string) *CookieTransfer {
-	return &CookieTransfer{
+func NewCookieTracker(name string, maxAge time.Duration, secure bool, rootPath string) *CookieTracker {
+	return &CookieTracker{
 		Name:     name,
 		MaxAge:   maxAge,
 		Secure:   secure,
@@ -34,11 +34,11 @@ func NewCookieTransfer(name string, maxAge time.Duration, secure bool, rootPath 
 	}
 }
 
-func (transfer *CookieTransfer) SetMaxAge(maxAge time.Duration) {
+func (transfer *CookieTracker) SetMaxAge(maxAge time.Duration) {
 	transfer.MaxAge = maxAge
 }
 
-func (transfer *CookieTransfer) Get(req *http.Request) (Id, error) {
+func (transfer *CookieTracker) Get(req *http.Request) (Id, error) {
 	cookie, err := req.Cookie(transfer.Name)
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -53,7 +53,7 @@ func (transfer *CookieTransfer) Get(req *http.Request) (Id, error) {
 	return Id(id), nil
 }
 
-func (transfer *CookieTransfer) Set(req *http.Request, rw http.ResponseWriter, id Id) {
+func (transfer *CookieTracker) Set(req *http.Request, rw http.ResponseWriter, id Id) {
 	sid := url.QueryEscape(string(id))
 	transfer.Lock.Lock()
 	defer transfer.Lock.Unlock()
@@ -83,7 +83,7 @@ func (transfer *CookieTransfer) Set(req *http.Request, rw http.ResponseWriter, i
 	http.SetCookie(rw, cookie)
 }
 
-func (transfer *CookieTransfer) Clear(rw http.ResponseWriter) {
+func (transfer *CookieTracker) Clear(rw http.ResponseWriter) {
 	cookie := http.Cookie{
 		Name:     transfer.Name,
 		Path:     transfer.RootPath,
@@ -96,33 +96,49 @@ func (transfer *CookieTransfer) Clear(rw http.ResponseWriter) {
 	http.SetCookie(rw, &cookie)
 }
 
-var _ Transfer = NewCookieTransfer("test", 0, false, "/")
+var _ Tracker = NewCookieTracker("test", 0, false, "/")
 
-// CookieRetriever provide sessionid from url
-/*type UrlTransfer struct {
+// UrlTracker provide sessionid from url
+type UrlTracker struct {
+	Key         string
+	ReplaceLink bool
 }
 
-func NewUrlTransfer() *UrlTransfer {
-	return &UrlTransfer{}
+func NewUrlTracker(key string, replaceLink bool) *UrlTracker {
+	return &UrlTracker{key, replaceLink}
 }
 
-func (transfer *UrlTransfer) Get(req *http.Request) (string, error) {
-	return "", nil
+func (tracker *UrlTracker) Get(req *http.Request) (Id, error) {
+	sessionId := req.URL.Query().Get(tracker.Key)
+	if sessionId != "" {
+		sessionId, _ = url.QueryUnescape(sessionId)
+		return Id(sessionId), nil
+	}
+
+	return Id(""), nil
 }
 
-func (transfer *UrlTransfer) Set(rw http.ResponseWriter, id Id) {
+func (tracker *UrlTracker) Set(req *http.Request, rw http.ResponseWriter, id Id) {
+	if tracker.ReplaceLink {
 
+	}
+}
+
+func (tracker *UrlTracker) SetMaxAge(maxAge time.Duration) {
+
+}
+
+func (tracker *UrlTracker) Clear(rw http.ResponseWriter) {
 }
 
 var (
-	_ Transfer = NewUrlTransfer()
+	_ Tracker = NewUrlTracker("id", false)
 )
-*/
 
 //for SWFUpload ...
-func NewCookieUrlTransfer(name string, maxAge time.Duration, secure bool, rootPath string) *CookieUrlTransfer {
-	return &CookieUrlTransfer{
-		CookieTransfer: CookieTransfer{
+func NewCookieUrlTracker(name string, maxAge time.Duration, secure bool, rootPath string) *CookieUrlTracker {
+	return &CookieUrlTracker{
+		CookieTracker: CookieTracker{
 			Name:     name,
 			MaxAge:   maxAge,
 			Secure:   secure,
@@ -131,16 +147,16 @@ func NewCookieUrlTransfer(name string, maxAge time.Duration, secure bool, rootPa
 	}
 }
 
-type CookieUrlTransfer struct {
-	CookieTransfer
+type CookieUrlTracker struct {
+	CookieTracker
 }
 
-func (transfer *CookieUrlTransfer) Get(req *http.Request) (Id, error) {
-	sessionId := req.URL.Query().Get(transfer.Name)
+func (tracker *CookieUrlTracker) Get(req *http.Request) (Id, error) {
+	sessionId := req.URL.Query().Get(tracker.Name)
 	if sessionId != "" {
 		sessionId, _ = url.QueryUnescape(sessionId)
 		return Id(sessionId), nil
 	}
 
-	return transfer.CookieTransfer.Get(req)
+	return tracker.CookieTracker.Get(req)
 }

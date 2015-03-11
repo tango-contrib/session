@@ -22,7 +22,7 @@ type Options struct {
 	SessionIdName    string
 	Store            Store
 	Generator        IdGenerator
-	Transfer         Transfer
+	Tracker          Tracker
 	OnSessionNew     func(*Session)
 	OnSessionRelease func(*Session)
 }
@@ -44,8 +44,8 @@ func preOptions(opts []Options) Options {
 	if opt.Generator == nil {
 		opt.Generator = NewSha1Generator(string(GenRandKey(16)))
 	}
-	if opt.Transfer == nil {
-		opt.Transfer = NewCookieTransfer(opt.SessionIdName, opt.MaxAge, false, DefaultCookiePath)
+	if opt.Tracker == nil {
+		opt.Tracker = NewCookieTracker(opt.SessionIdName, opt.MaxAge, false, DefaultCookiePath)
 	}
 	return opt
 }
@@ -81,7 +81,7 @@ func (itor *Sessions) Handle(ctx *tango.Context) {
 
 func (manager *Sessions) SetMaxAge(maxAge time.Duration) {
 	manager.MaxAge = maxAge
-	manager.Transfer.SetMaxAge(maxAge)
+	manager.Tracker.SetMaxAge(maxAge)
 	manager.Store.SetMaxAge(maxAge)
 }
 
@@ -91,7 +91,7 @@ func (manager *Sessions) SetIdMaxAge(id Id, maxAge time.Duration) {
 
 // TODO:
 func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Session {
-	id, err := manager.Transfer.Get(req)
+	id, err := manager.Tracker.Get(req)
 	if err != nil {
 		// TODO:
 		println("error:", err.Error())
@@ -100,7 +100,7 @@ func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Ses
 
 	if !manager.Generator.IsValid(id) {
 		id = manager.Generator.Gen(req)
-		manager.Transfer.Set(req, rw, id)
+		manager.Tracker.Set(req, rw, id)
 		manager.Store.Add(id)
 	}
 
@@ -117,7 +117,7 @@ func (manager *Sessions) Invalidate(rw http.ResponseWriter, session *Session) {
 		manager.OnSessionRelease(session)
 	}
 	manager.Store.Clear(session.id)
-	manager.Transfer.Clear(rw)
+	manager.Tracker.Clear(rw)
 }
 
 func (manager *Sessions) Run() error {

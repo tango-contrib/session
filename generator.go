@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+type Id string
+
 type IdGenerator interface {
 	Gen(req *http.Request) Id
 	IsValid(id Id) bool
