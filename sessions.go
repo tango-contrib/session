@@ -104,8 +104,13 @@ func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Ses
 		manager.Store.Add(id)
 	}
 
-	session := &Session{id: id, maxAge: manager.MaxAge, manager: manager}
-	// is exist?
+	session := &Session{
+		id:      id,
+		maxAge:  manager.MaxAge,
+		manager: manager,
+		rw:      rw,
+	}
+
 	if manager.OnSessionNew != nil {
 		manager.OnSessionNew(session)
 	}

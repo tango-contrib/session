@@ -48,8 +48,11 @@ func (session *Session) SetSession(s *Session) {
 	session.id = s.id
 	session.maxAge = s.maxAge
 	session.manager = s.manager
+	session.rw = s.rw
 }
 
 type Sessioner interface {
 	SetSession(*Session)
 }
+
+var _ Sessioner = &Session{}
