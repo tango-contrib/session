@@ -67,18 +67,16 @@ func (transfer *CookieTracker) Set(req *http.Request, rw http.ResponseWriter, id
 			HttpOnly: true,
 			Secure:   transfer.Secure,
 		}
-		if transfer.MaxAge > 0 {
+		/*if transfer.MaxAge > 0 {
 			cookie.MaxAge = int(transfer.MaxAge / time.Second)
-			//cookie.Expires = time.Now().Add(transfer.maxAge).UTC()
-		}
+		}*/
 
 		req.AddCookie(cookie)
 	} else {
 		cookie.Value = sid
-		if transfer.MaxAge > 0 {
+		/*if transfer.MaxAge > 0 {
 			cookie.MaxAge = int(transfer.MaxAge / time.Second)
-			//cookie.Expires = time.Now().Add(transfer.maxAge)
-		}
+		}*/
 	}
 	http.SetCookie(rw, cookie)
 }

@@ -45,7 +45,7 @@ func preOptions(opts []Options) Options {
 		opt.Generator = NewSha1Generator(string(GenRandKey(16)))
 	}
 	if opt.Tracker == nil {
-		opt.Tracker = NewCookieTracker(opt.SessionIdName, opt.MaxAge, false, DefaultCookiePath)
+		opt.Tracker = NewCookieTracker(opt.SessionIdName, 0, false, DefaultCookiePath)
 	}
 	return opt
 }
