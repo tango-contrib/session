@@ -47,3 +47,7 @@ func main() {
 ## Getting Help
 
 - [API Reference](https://gowalker.org/github.com/tango-contrib/session)
+
+## License
+
+This project is under BSD License. See the [LICENSE](LICENSE) file for the full license text.
