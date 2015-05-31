@@ -21,6 +21,10 @@ type Sessions struct {
 	Options
 }
 
+type Sessionser interface {
+	SetSessions(*Sessions)
+}
+
 type Options struct {
 	MaxAge           time.Duration
 	SessionIdName    string
@@ -75,6 +79,10 @@ func NewWithTimeout(maxAge time.Duration) *Sessions {
 
 func (itor *Sessions) Handle(ctx *tango.Context) {
 	if action := ctx.Action(); ctx != nil {
+		if s, ok := action.(Sessionser); ok {
+			s.SetSessions(itor)
+		}
+
 		if s, ok := action.(Sessioner); ok {
 			s.SetSession(itor.Session(ctx.Req(), ctx.ResponseWriter))
 		}
@@ -93,6 +101,10 @@ func (manager *Sessions) SetIdMaxAge(id Id, maxAge time.Duration) {
 	manager.Store.SetIdMaxAge(id, maxAge)
 }
 
+func (manager *Sessions) Exist(id Id) bool {
+	return manager.Store.Exist(id)
+}
+
 // TODO:
 func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Session {
 	id, err := manager.Tracker.Get(req)
@@ -102,10 +114,13 @@ func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Ses
 		return nil
 	}
 
+	var renew bool
+
 	if !manager.Generator.IsValid(id) {
 		id = manager.Generator.Gen(req)
 		manager.Tracker.Set(req, rw, id)
 		manager.Store.Add(id)
+		renew = true
 	}
 
 	session := &Session{
@@ -115,9 +130,10 @@ func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Ses
 		rw:      rw,
 	}
 
-	if manager.OnSessionNew != nil {
+	if renew && manager.OnSessionNew != nil {
 		manager.OnSessionNew(session)
 	}
+
 	return session
 }
 

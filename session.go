@@ -48,6 +48,10 @@ func (session *Session) SetMaxAge(maxAge time.Duration) {
 	session.maxAge = maxAge
 }
 
+func (session *Session) Sessions() *Sessions {
+	return session.manager
+}
+
 func (session *Session) SetSession(s *Session) {
 	session.id = s.id
 	session.maxAge = s.maxAge
