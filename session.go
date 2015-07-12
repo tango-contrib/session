@@ -24,6 +24,10 @@ func (session *Session) SetId(id Id) {
 	session.id = id
 }
 
+func (session *Session) Count() int64 {
+	return session.manager.Store.Count()
+}
+
 func (session *Session) Get(key string) interface{} {
 	return session.manager.Store.Get(session.id, key)
 }
