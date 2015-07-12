@@ -15,6 +15,8 @@ type Store interface {
 	Set(id Id, key string, value interface{}) error
 	Del(id Id, key string) bool
 
+	Count() int64
+
 	SetMaxAge(maxAge time.Duration)
 	SetIdMaxAge(id Id, maxAge time.Duration)
 
