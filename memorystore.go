@@ -54,13 +54,6 @@ func NewMemoryStore(maxAge time.Duration) *MemoryStore {
 		maxAge: maxAge, GcInterval: 10 * time.Second}
 }
 
-func (store *MemoryStore) Count() (count int64) {
-	store.lock.Lock()
-	count = int64(len(store.nodes))
-	store.lock.Unlock()
-	return count
-}
-
 func (store *MemoryStore) SetMaxAge(maxAge time.Duration) {
 	store.lock.Lock()
 	store.maxAge = maxAge
