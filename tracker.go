@@ -38,12 +38,12 @@ func NewCookieTracker(name string, maxAge time.Duration, secure bool, rootPath s
 	}
 }
 
-func (transfer *CookieTracker) SetMaxAge(maxAge time.Duration) {
-	transfer.MaxAge = maxAge
+func (tracker *CookieTracker) SetMaxAge(maxAge time.Duration) {
+	tracker.MaxAge = maxAge
 }
 
-func (transfer *CookieTracker) Get(req *http.Request) (Id, error) {
-	cookie, err := req.Cookie(transfer.Name)
+func (tracker *CookieTracker) Get(req *http.Request) (Id, error) {
+	cookie, err := req.Cookie(tracker.Name)
 	if err != nil {
 		if err == http.ErrNoCookie {
 			return "", nil
@@ -57,41 +57,35 @@ func (transfer *CookieTracker) Get(req *http.Request) (Id, error) {
 	return Id(id), nil
 }
 
-func (transfer *CookieTracker) Set(req *http.Request, rw http.ResponseWriter, id Id) {
+func (tracker *CookieTracker) Set(req *http.Request, rw http.ResponseWriter, id Id) {
 	sid := url.QueryEscape(string(id))
-	transfer.Lock.Lock()
-	defer transfer.Lock.Unlock()
-	cookie, _ := req.Cookie(transfer.Name)
+	tracker.Lock.Lock()
+	defer tracker.Lock.Unlock()
+	cookie, _ := req.Cookie(tracker.Name)
 	if cookie == nil {
 		cookie = &http.Cookie{
-			Name:     transfer.Name,
+			Name:     tracker.Name,
 			Value:    sid,
-			Path:     transfer.RootPath,
-			Domain:   transfer.Domain,
+			Path:     tracker.RootPath,
+			Domain:   tracker.Domain,
 			HttpOnly: true,
-			Secure:   transfer.Secure,
+			Secure:   tracker.Secure,
 		}
-		/*if transfer.MaxAge > 0 {
-			cookie.MaxAge = int(transfer.MaxAge / time.Second)
-		}*/
 
 		req.AddCookie(cookie)
 	} else {
 		cookie.Value = sid
-		/*if transfer.MaxAge > 0 {
-			cookie.MaxAge = int(transfer.MaxAge / time.Second)
-		}*/
 	}
 	http.SetCookie(rw, cookie)
 }
 
-func (transfer *CookieTracker) Clear(rw http.ResponseWriter) {
+func (tracker *CookieTracker) Clear(rw http.ResponseWriter) {
 	cookie := http.Cookie{
-		Name:     transfer.Name,
-		Path:     transfer.RootPath,
-		Domain:   transfer.Domain,
+		Name:     tracker.Name,
+		Path:     tracker.RootPath,
+		Domain:   tracker.Domain,
 		HttpOnly: true,
-		Secure:   transfer.Secure,
+		Secure:   tracker.Secure,
 		Expires:  time.Date(0, 1, 1, 0, 0, 0, 0, time.Local),
 		MaxAge:   -1,
 	}
@@ -162,3 +156,64 @@ func (tracker *CookieUrlTracker) Get(req *http.Request) (Id, error) {
 
 	return tracker.CookieTracker.Get(req)
 }
+
+type HeaderTracker struct {
+	Name string
+}
+
+func NewHeaderTracker(name string) *HeaderTracker {
+	return &HeaderTracker{
+		Name: name,
+	}
+}
+
+func (tracker *HeaderTracker) SetMaxAge(maxAge time.Duration) {
+}
+
+func (tracker *HeaderTracker) Get(req *http.Request) (Id, error) {
+	val := req.Header.Get(tracker.Name)
+	return Id(val), nil
+}
+
+func (tracker *HeaderTracker) Set(req *http.Request, rw http.ResponseWriter, id Id) {
+	rw.Header().Set(tracker.Name, string(id))
+}
+
+func (tracker *HeaderTracker) Clear(rw http.ResponseWriter) {
+}
+
+/*
+type CompositeTracker struct {
+	Trackers []Tracker
+}
+
+func NewCompositeTracker(trackers ...Tracker) *CompositeTracker {
+	return &CompositeTracker{trackers}
+}
+
+func (trackers *CompositeTracker) Get(req *http.Request) (Id, error) {
+	for _, tracker := range trackers.Trackers {
+		if id, err := tracker.Get(req); err == nil {
+			return id, nil
+		}
+	}
+	return Id(""), nil
+}
+
+func (trackers *CompositeTracker) SetMaxAge(maxAge time.Duration) {
+	for _, tracker := range trackers.Trackers {
+		tracker.SetMaxAge(maxAge)
+	}
+}
+
+func (trackers *CompositeTracker) Set(req *http.Request, rw http.ResponseWriter, id Id) {
+	for _, tracker := range trackers.Trackers {
+		tracker.Set(req, rw, id)
+	}
+}
+
+func (trackers *CompositeTracker) Clear(rw http.ResponseWriter) {
+	for _, tracker := range trackers.Trackers {
+		tracker.Clear(rw)
+	}
+}*/

@@ -69,21 +69,21 @@ func (store *MemoryStore) SetIdMaxAge(id Id, maxAge time.Duration) {
 }
 
 func (store *MemoryStore) Get(id Id, key string) interface{} {
-	store.lock.RLock()
+	store.lock.Lock()
 	node, ok := store.nodes[id]
-	store.lock.RUnlock()
 	if !ok {
+		store.lock.Unlock()
 		return nil
 	}
 
 	if store.maxAge > 0 && time.Now().Sub(node.last) > node.maxAge {
 		// lazy DELETE expire
-		store.lock.Lock()
 		delete(store.nodes, id)
 		store.lock.Unlock()
 		return nil
 	}
 
+	store.lock.Unlock()
 	return node.Get(key)
 }
 
@@ -117,12 +117,12 @@ func (store *MemoryStore) Add(id Id) bool {
 }
 
 func (store *MemoryStore) Del(id Id, key string) bool {
-	store.lock.RLock()
+	store.lock.Lock()
 	node, ok := store.nodes[id]
-	store.lock.RUnlock()
 	if ok {
 		node.Del(key)
 	}
+	store.lock.Unlock()
 	return true
 }
 
