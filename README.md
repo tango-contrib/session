@@ -1,16 +1,17 @@
 session [![Build Status](https://drone.io/github.com/tango-contrib/session/status.png)](https://drone.io/github.com/tango-contrib/session/latest) [![](http://gocover.io/_badge/github.com/tango-contrib/session)](http://gocover.io/github.com/tango-contrib/session)
 ======
 
-Session is a session middleware for [Tango](https://github.com/lunny/tango). 
+Session is a session middleware for [Tango](https://github.com/lunny/tango).
 
 ## Backend Supports
 
 Currently session support some backends below:
 
-* Memory - memory as a session store
-* [Redis](http://github.com/tango-contrib/session-redis) - redis server as a session store
+* Memory - memory as a session store, this is the default store
 * [nodb](http://github.com/tango-contrib/session-nodb) - nodb as a session store
+* [redis](http://github.com/tango-contrib/session-redis) - redis server as a session store
 * [ledis](http://github.com/tango-contrib/session-ledis) - ledis server as a session store
+* [ssdb](http://github.com/tango-contrib/session-ssdb) - ssdb server as a session store
 
 ## Installation
 
