@@ -78,7 +78,7 @@ func NewWithTimeout(maxAge time.Duration) *Sessions {
 }
 
 func (itor *Sessions) Handle(ctx *tango.Context) {
-	if action := ctx.Action(); ctx != nil {
+	if action := ctx.Action(); action != nil {
 		if s, ok := action.(Sessionser); ok {
 			s.SetSessions(itor)
 		}
@@ -89,6 +89,14 @@ func (itor *Sessions) Handle(ctx *tango.Context) {
 	}
 
 	ctx.Next()
+}
+
+func (manager *Sessions) SessionFromID(id Id) *Session {
+	return &Session{
+		id:      id,
+		maxAge:  manager.MaxAge,
+		manager: manager,
+	}
 }
 
 func (manager *Sessions) SetMaxAge(maxAge time.Duration) {
