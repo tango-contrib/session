@@ -1,4 +1,4 @@
-session [![Build Status](https://drone.io/github.com/tango-contrib/session/status.png)](https://drone.io/github.com/tango-contrib/session/latest) [![](http://gocover.io/_badge/github.com/tango-contrib/session)](http://gocover.io/github.com/tango-contrib/session)
+session [![CircleCI](https://circleci.com/gh/tango-contrib/flash/tree/master.svg?style=svg)](https://circleci.com/gh/tango-contrib/flash/tree/master) [![](http://gocover.io/_badge/github.com/tango-contrib/session)](http://gocover.io/github.com/tango-contrib/session)
 ======
 
 Session is a session middleware for [Tango](https://github.com/lunny/tango).
