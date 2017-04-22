@@ -19,6 +19,8 @@ type SessionAction struct {
 	Session
 }
 
+var _ Sessioner = &SessionAction{}
+
 func (action *SessionAction) Get() string {
 	action.Session.Set("test", "1")
 	return action.Session.Get("test").(string)
@@ -46,18 +48,18 @@ func TestSession(t *testing.T) {
 
 type PrefixGenerator struct {
 	generator IdGenerator
-	prefix string
+	prefix    string
 }
 
 func NewPrefixGenerator(generator IdGenerator, prefix string) IdGenerator {
 	return &PrefixGenerator{
 		generator: generator,
-		prefix: prefix,
+		prefix:    prefix,
 	}
 }
 
 func (p *PrefixGenerator) Gen(req *http.Request) Id {
-	return Id(p.prefix+string(p.generator.Gen(req)))
+	return Id(p.prefix + string(p.generator.Gen(req)))
 }
 
 func (p *PrefixGenerator) IsValid(id Id) bool {

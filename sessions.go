@@ -84,7 +84,11 @@ func (itor *Sessions) Handle(ctx *tango.Context) {
 		}
 
 		if s, ok := action.(Sessioner); ok {
-			s.SetSession(itor.Session(ctx.Req(), ctx.ResponseWriter))
+			err := s.InitSession(itor, ctx.Req(), ctx.ResponseWriter)
+			if err != nil {
+				ctx.Result = err
+				return
+			}
 		}
 	}
 
@@ -113,36 +117,10 @@ func (manager *Sessions) Exist(id Id) bool {
 	return manager.Store.Exist(id)
 }
 
-// TODO:
 func (manager *Sessions) Session(req *http.Request, rw http.ResponseWriter) *Session {
-	id, err := manager.Tracker.Get(req)
-	if err != nil {
-		// TODO:
-		println("error:", err.Error())
-		return nil
-	}
-
-	var renew bool
-
-	if !manager.Generator.IsValid(id) {
-		id = manager.Generator.Gen(req)
-		manager.Tracker.Set(req, rw, id)
-		manager.Store.Add(id)
-		renew = true
-	}
-
-	session := &Session{
-		id:      id,
-		maxAge:  manager.MaxAge,
-		manager: manager,
-		rw:      rw,
-	}
-
-	if renew && manager.OnSessionNew != nil {
-		manager.OnSessionNew(session)
-	}
-
-	return session
+	var sess Session
+	sess.InitSession(manager, req, rw)
+	return &sess
 }
 
 func (manager *Sessions) Invalidate(rw http.ResponseWriter, session *Session) {

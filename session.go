@@ -52,15 +52,45 @@ func (session *Session) Sessions() *Sessions {
 	return session.manager
 }
 
-func (session *Session) SetSession(s *Session) {
-	session.id = s.id
-	session.maxAge = s.maxAge
-	session.manager = s.manager
-	session.rw = s.rw
+func (session *Session) GetSession() *Session {
+	return session
 }
 
+func (session *Session) InitSession(manager *Sessions, req *http.Request, rw http.ResponseWriter) error {
+	id, err := manager.Tracker.Get(req)
+	if err != nil {
+		return err
+	}
+
+	var renew bool
+
+	if !manager.Generator.IsValid(id) {
+		id = manager.Generator.Gen(req)
+		manager.Tracker.Set(req, rw, id)
+		manager.Store.Add(id)
+		renew = true
+	}
+
+	session.id = id
+	session.maxAge = manager.MaxAge
+	session.manager = manager
+	session.rw = rw
+
+	if renew && manager.OnSessionNew != nil {
+		manager.OnSessionNew(session)
+	}
+
+	return nil
+}
+
+// Sessioner Session interface
 type Sessioner interface {
-	SetSession(*Session)
+	GetSession() *Session
+	InitSession(*Sessions, *http.Request, http.ResponseWriter) error
 }
 
-var _ Sessioner = &Session{}
+type proxySession struct {
+	Session
+}
+
+var _ Sessioner = &proxySession{}
